@@ -1,0 +1,20 @@
+# Ansible playbook to configure local VM
+#
+# Colin Hansen
+# Bryan Steitz
+# Pan Wang
+#
+# Last Updated: September 27, 2017
+
+    - name: "Install python"
+      command: apt-get install -y python
+      become: true
+
+    - name: "Update OS"
+      command: apt-get update
+      become: true
+
+    - name: "Install Apache2"
+      command: apt-get install -y apache2
+      become: true
+...

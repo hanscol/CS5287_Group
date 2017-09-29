@@ -1,0 +1,62 @@
+# Ansible playbook to launch VMs on Horizon
+#
+# Colin Hansen
+# Bryan Steitz
+# Pan Wang
+#
+# Last Updated: September 27, 2017
+
+    - name: "Set openstack variables"
+      set_fact:
+        os_auth:
+          os_project_id: "7b7cacfc1d3c4973a2666a26cf1a40ff"
+          auth_url: "https://keystone.isis.vanderbilt.edu:5000/v3"
+          username: "<username here>"
+          password: "<password here>"
+          project_name: "Cloud Class"
+          project_domain_name: "Default"
+          user_domain_name: "Default"
+
+    - name: "Launch webserver"
+      os_server:
+        auth: "{{ os_auth }}"
+        name: "cbp-web"
+        image: "Ubuntu-16.04_20170605"
+        flavor: "m1.small"
+        key_name: "class-key"
+        nics: "net-id=b16b0244-e1b5-4d36-90ff-83a0d87d8682"
+        security_groups: teamCBP_group
+        auto_ip: yes
+        userdata:
+          packages:
+            - python
+            - ansible
+      register: webserver
+
+    - name: "Launch database server"
+      os_server:
+        auth: "{{ os_auth }}"
+        name: "cbp-db"
+        image: "Ubuntu-16.04_20170605"
+        flavor: "m1.small"
+        key_name: "class-key"
+        nics: "net-id=b16b0244-e1b5-4d36-90ff-83a0d87d8682"
+        security_groups: teamCBP_group
+        auto_ip: no
+      register: db_server
+
+    - name: "Add webserver IP to inventory"
+      shell: echo -e "[Webserver]\n{{ webserver.server.public_v4 }} ansible_connection=ssh\n" >> /vagrant/web_inventory
+      when: webserver.changed
+
+    - name: "Add database server IP to inventory"
+      shell: echo -e "[Db_server]\n{{ db_server.server.private_v4 }} ansible_connection=ssh" >> /vagrant/web_inventory
+      when: db_server.changed
+
+    - name: "Install python for running ansible"
+      hosts: all
+      gather_facts: no
+      command: apt-get install -y python
+      become: true
+
+...

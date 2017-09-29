@@ -1,0 +1,24 @@
+# Ansible playbook to configure local VM
+#
+# Colin Hansen
+# Bryan Steitz
+# Pan Wang
+#
+# Last Updated: September 28, 2017
+
+    - name: "Install python requirements"
+      command: apt-get install -y build-essential libssl-dev libffi-dev python-dev
+      become: true
+
+    - name: "Install pip"
+      command: easy_install pip
+      become: true
+
+    - name: "Install shade"
+      command: pip install shade
+      become: true
+
+    - name: "Install python openstack client"
+      command: apt install -y python-openstackclient
+      become: true
+...

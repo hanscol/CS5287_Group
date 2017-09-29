@@ -1,0 +1,33 @@
+# Master Ansible playbook
+#
+# Colin Hansen
+# Bryan Steitz
+# Pan Wang
+#
+# Last Updated: September 28, 2017
+
+  #####################################################
+  ### Local VM Steps
+  #####################################################
+
+  - name: "Master File for Local VM"
+    hosts: localVMs
+    remote_user: ubuntu
+
+    ### Install tasks
+    tasks:
+
+    - import_tasks: local_config_playbook.yml
+    - import_tasks: launch_servers.yml
+
+  #####################################################
+  ### Setup webserver
+  #####################################################
+
+  - name: "Install webserver dependencies"
+    hosts: Webserver
+    remote_user: ubuntu
+
+    tasks:
+    - import_tasks: webserver_config.yml
+...
