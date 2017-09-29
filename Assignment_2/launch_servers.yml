@@ -11,8 +11,8 @@
         os_auth:
           os_project_id: "7b7cacfc1d3c4973a2666a26cf1a40ff"
           auth_url: "https://keystone.isis.vanderbilt.edu:5000/v3"
-          username: "<username here>"
-          password: "<password here>"
+          username: "<username>"
+          password: "<password>"
           project_name: "Cloud Class"
           project_domain_name: "Default"
           user_domain_name: "Default"
@@ -27,10 +27,6 @@
         nics: "net-id=b16b0244-e1b5-4d36-90ff-83a0d87d8682"
         security_groups: teamCBP_group
         auto_ip: yes
-        userdata:
-          packages:
-            - python
-            - ansible
       register: webserver
 
     - name: "Launch database server"
@@ -52,11 +48,5 @@
     - name: "Add database server IP to inventory"
       shell: echo -e "[Db_server]\n{{ db_server.server.private_v4 }} ansible_connection=ssh" >> /vagrant/web_inventory
       when: db_server.changed
-
-    - name: "Install python for running ansible"
-      hosts: all
-      gather_facts: no
-      command: apt-get install -y python
-      become: true
 
 ...

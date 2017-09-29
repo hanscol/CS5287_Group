@@ -7,7 +7,7 @@
 # Last Updated: September 27, 2017
 
     - name: "Install python"
-      command: apt-get install -y python
+      apt: name=python state=latest
       become: true
 
     - name: "Update OS"
@@ -17,4 +17,18 @@
     - name: "Install Apache2"
       command: apt-get install -y apache2
       become: true
+
+    - name: "Install php"
+      command: apt-get install -y php libapache2-mod-php php-mcrypt php-mysql
+      become: true
+
+    - name: "Install git"
+      command: apt-get install -y git
+      become: true
+
+    - name: "Clone git repo in var/www/ folder"
+      command: git clone https://github.com/doc-vu/phpMySQLapp
+      become: true
+      args:
+        chdir: "/var/www/html/"
 ...

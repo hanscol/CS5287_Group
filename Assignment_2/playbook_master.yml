@@ -27,6 +27,10 @@
   - name: "Install webserver dependencies"
     hosts: Webserver
     remote_user: ubuntu
+    gather_facts: no
+    pre_tasks:
+      - name: "Install python"
+        raw: sudo apt-get -y install python-simplejson
 
     tasks:
     - import_tasks: webserver_config.yml
