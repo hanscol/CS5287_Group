@@ -4,15 +4,15 @@
 # Bryan Steitz
 # Pan Wang
 #
-# Last Updated: September 27, 2017
+# Last Updated: October 5, 2017
 
     - name: "Set openstack variables"
       set_fact:
         os_auth:
           os_project_id: "7b7cacfc1d3c4973a2666a26cf1a40ff"
           auth_url: "https://keystone.isis.vanderbilt.edu:5000/v3"
-          username: "<username>"
-          password: "<password>"
+          username: "hansencb"
+          password: "Blackmamba45"
           project_name: "Cloud Class"
           project_domain_name: "Default"
           user_domain_name: "Default"

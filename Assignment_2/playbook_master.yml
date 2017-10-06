@@ -4,8 +4,9 @@
 # Bryan Steitz
 # Pan Wang
 #
-# Last Updated: September 28, 2017
+# Last Updated: October 5, 2017
 
+  
   #####################################################
   ### Local VM Steps
   #####################################################
@@ -19,19 +20,12 @@
 
     - import_tasks: local_config_playbook.yml
     - import_tasks: launch_servers.yml
-
-  #####################################################
-  ### Setup webserver
-  #####################################################
-
-  - name: "Install webserver dependencies"
-    hosts: Webserver
-    remote_user: ubuntu
-    gather_facts: no
-    pre_tasks:
-      - name: "Install python"
-        raw: sudo apt-get -y install python-simplejson
-
-    tasks:
-    - import_tasks: webserver_config.yml
-...
+    - name: "Wait for servers"
+      wait_for:
+        path: web_inventory
+        search_regex: Webserver
+      wait_for:
+        path: web_inventory
+        search_regex: Db_server
+    - name: "Run ansible script for web server"
+      command: ansible-playbook webserver_setup.yml -i web_inventory --private-key=class-key.pem

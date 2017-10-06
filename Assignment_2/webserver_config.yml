@@ -1,10 +1,10 @@
-# Ansible playbook to configure local VM
+# Ansible playbook to configure webserver
 #
 # Colin Hansen
 # Bryan Steitz
 # Pan Wang
 #
-# Last Updated: September 27, 2017
+# Last Updated: October 5, 2017
 
     - name: "Install python"
       apt: name=python state=latest
@@ -22,13 +22,54 @@
       command: apt-get install -y php libapache2-mod-php php-mcrypt php-mysql
       become: true
 
+    - name: "Install Ansible"
+      command: apt-get install -y ansible
+      become: true
+    
     - name: "Install git"
       command: apt-get install -y git
       become: true
+
+    - stat: path=/var/www/html/phpMySQLapp
+      register: gitrepo
 
     - name: "Clone git repo in var/www/ folder"
       command: git clone https://github.com/doc-vu/phpMySQLapp
       become: true
       args:
-        chdir: "/var/www/html/"
-...
+         chdir: "/var/www/html/"
+      when: gitrepo.stat.exists == False
+
+    - name: "Update bookDatabase.php with DB IP"
+      lineinfile:
+        dest: /var/www/html/phpMySQLapp/books/includes/bookDatabase.php
+        regexp: '^(.*)servername =(.*)$'
+        line: '$servername = "{{ item }}";'
+        backrefs: true
+      become: true
+      with_items: 
+          - "{{ groups['Db_server'][0] }}"
+    
+    - name: "Update movieDatabase.php with DB IP"
+      lineinfile:
+        dest: /var/www/html/phpMySQLapp/movies/includes/movieDatabase.php
+        regexp: '^(.*)servername =(.*)$'
+        line: '$servername = "{{ item }}";'
+        backrefs: true
+      become: true
+      with_items: 
+          - "{{ groups['Db_server'][0] }}"
+
+    - name: "Update dir.conf"
+      lineinfile:
+        dest: /etc/apache2/mods-enabled/dir.conf
+        regexp: '^(.*)DirectoryIndex(.*)$'
+        line: ' DirectoryIndex index.php index.html index.cgi index.pl index.xhtml index.htm'
+        backrefs: true
+      become: true
+
+    - name: "Restart Apache"
+      command: service apache2 restart
+      become: true
+
+... 
