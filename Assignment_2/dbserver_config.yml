@@ -96,7 +96,7 @@
         mysql_db:
           state: import
           name: bookstore
-          target: /home/ubuntu/phpMySQLapp/mySqlDB/movieDB.sql
+          target: /home/ubuntu/phpMySQLapp/mySqlDB/bookDB.sql
         become: true
 
       - name: "Give Proper Permissions"
