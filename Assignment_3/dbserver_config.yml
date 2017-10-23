@@ -1,0 +1,118 @@
+# Ansible playbook to configure database server
+#
+# Colin Hansen
+# Bryan Steitz
+# Pan Wang
+#
+# Last Updated: October 5, 2017
+
+  - name: "Installing database server dependencies"
+    hosts: Db_server
+    remote_user: ubuntu
+    gather_facts: no
+    pre_tasks:
+      - name: "Install python"
+        raw: sudo apt-get -y install python-simplejson    
+    
+    tasks:
+      - name: "Install python"
+        apt: name=python state=latest
+        become: true
+      
+      - name: "Update OS"
+        command: apt-get update
+        become: true
+      
+      - name: "Install git"
+        command: apt-get install -y git
+        become: true
+      
+      - stat: path=/home/ubuntu/phpMySQLapp
+        register: gitrepo
+      
+      - name: "Clone git repo"
+        command: git clone https://github.com/doc-vu/phpMySQLapp
+        become: true
+        args:
+          chdir: "/home/ubuntu/"
+        when: gitrepo.stat.exists == False
+     
+      - name: "Install pip"
+        apt:
+          name: python-pip
+          state: latest
+        become: true
+     
+      - name: "Upgrade pip"
+        command: pip install --upgrade pip
+        become: true
+     
+      - name: "Install MySQL"
+        apt: 
+          name: mysql-server 
+          state: latest
+        become: true
+      
+      - name: "Move my.cnf"
+        command: cp /etc/mysql/my.cnf /home/ubuntu/.my.cnf
+        become: true
+     
+      - name: "Install MySQLDB dependencies"
+        apt:
+          name: libmysqlclient-dev
+          state: present
+        become: true
+
+      - name: "Install Python MySQLDB module"
+        pip:
+          name: MySQL-python
+        become: true
+
+      - name: "Create Movie Database"
+        mysql_db:
+          login_user: root
+          login_password: ""
+          state: present
+          name: moviedb
+          collation: utf8_unicode_ci
+          encoding: utf8
+        become: true
+
+      - name: "Create Book Database"
+        mysql_db:
+          login_user: root
+          login_password: ""
+          state: present
+          name: bookstore
+          collation: utf8_unicode_ci
+          encoding: utf8
+        become: true
+
+      - name: "Populate Movie Database"
+        mysql_db: login_user=root login_password="" state=import name=moviedb target=/home/ubuntu/phpMySQLapp/mySqlDB/movieDB.sql collation=utf8_unicode_ci encoding=utf8
+        become: true
+ 
+      - name: "Populate Book Database"
+        mysql_db:
+          state: import
+          name: bookstore
+          target: /home/ubuntu/phpMySQLapp/mySqlDB/bookDB.sql
+        become: true
+
+      - name: "Give Proper Permissions"
+        mysql_user: name=root password=admin priv=*.*:ALL host='%' state=present
+        become: true
+
+      - name: "Set bind-address"
+        lineinfile:
+          dest: /etc/mysql/mysql.conf.d/mysqld.cnf
+          regexp: '^(.*)bind-address(.*)$'
+          line: 'bind-address		= 0.0.0.0'
+          backrefs: true
+        become: true
+
+      - name: "Restart MySQL"
+        command: service mysql restart
+        become: true
+
+...

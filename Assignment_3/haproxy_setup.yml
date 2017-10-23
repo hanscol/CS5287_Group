@@ -1,0 +1,19 @@
+# Ansible playbook for installing HAProxy on webserver
+#
+# Colin Hansen
+# Bryan Steitz
+# Pan Wang
+#
+# Last Updated: October 18, 2017
+
+  #####################################################
+  ### Setup HAProxy
+  #####################################################
+  - name: "Setup HAProxy"
+    hosts: Webserver
+    remote_user: ubuntu
+    gather_facts: no
+    tasks:
+    - name: "Install HAProxy"
+      apt: name=haproxy state=latest
+      become: true
