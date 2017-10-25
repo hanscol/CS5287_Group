@@ -20,6 +20,13 @@
       
       - name: "Add dns server"
         shell: awk 'NR==7{print "\tdns-nameservers 8.8.8.8"}1' /etc/network/interfaces | sudo tee /etc/network/interfaces
+      
+      - name: "Edit dynamic resolv.conf file"
+        shell: echo "nameserver 8.8.8.8" | sudo tee /etc/resolvconf/resolv.conf.d/base
+
+      - name: "Regenerate resolv.conf"
+        shell: resolvconf -u
+        become: true
 
       - name: "Restart networking"
         shell: sudo service networking restart
