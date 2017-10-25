@@ -11,8 +11,8 @@
         os_auth:
           os_project_id: "7b7cacfc1d3c4973a2666a26cf1a40ff"
           auth_url: "https://keystone.isis.vanderbilt.edu:5000/v3"
-          username: "hansencb"
-          password: "Blackmamba45"
+          username: ""
+          password: ""
           project_name: "Cloud Class"
           project_domain_name: "Default"
           user_domain_name: "Default"
