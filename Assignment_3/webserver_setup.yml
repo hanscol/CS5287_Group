@@ -30,6 +30,7 @@
         - class-key.pem
         - dbserver_config.yml
         - web_inventory
+        - cham_key.pem
     - import_tasks: webserver_config.yml
     - name: "Run ansible script for database server"
       command: ansible-playbook dbserver_config.yml -i web_inventory --private-key=class-key.pem

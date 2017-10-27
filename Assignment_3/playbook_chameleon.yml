@@ -1,0 +1,44 @@
+# Master Ansible playbook
+#
+# Colin Hansen
+# Bryan Steitz
+# Pan Wang
+#
+# Last Updated: October 27, 2017
+
+  
+  #####################################################
+  ### Playbook for HAProxy and Chameleon
+  #####################################################
+
+  - name: "Setting up HAProxy with Chameleon server"
+    hosts: localVMs
+    remote_user: ubuntu
+
+    ### Install tasks
+    tasks:
+
+    - import_tasks: launch_chameleon_server.yml
+    - name: "Wait for chameleon server"
+      wait_for:
+        path: web_inventory
+        search_regex: chameleon_db
+      wait_for:
+        port: 22
+        host: "{{ item }}"
+        search_regex: OpenSSH
+        delay: 10
+      with_items:
+          - "{{ groups['chameleon_db'][0] }}"
+
+    - name: "Run ansible script to setup chameleon server"
+      command: ansible-playbook chameleon_db_config.yml -i web_inventory --private-key=~/.ssh/cham_key.pem
+
+    - name: "Replicate MySQL Server"
+      command: ansible-playbook config_db_replication.yml -i web_inventory --private-key=~/.ssh/class-key.pem 
+    
+    - name: "Replicate MySQL Server Slave Side"
+      command: ansible-playbook chameleon_db_replication.yml -i web_inventory --private-key=~/.ssh/cham_key.pem 
+    
+    - name: "Run ansible script to setup HAProxy on webserver"
+      command: ansible-playbook haproxy_setup.yml -i web_inventory --private-key=class-key.pem   

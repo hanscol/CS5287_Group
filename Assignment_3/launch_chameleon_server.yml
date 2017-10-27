@@ -26,8 +26,8 @@
       image: "CC-Ubuntu16.04"
       flavor: "m1.small"
       nics: "net-id=da34df32-e807-4335-8d8d-c91760dfcd3a"
-      key_name: "cbp_chameleon_key"
-      security_groups: "default"
+      key_name: "cham_key"
+      security_groups: "cbp_chameleon"
       auto_ip: yes
     register: chameleon_db
 

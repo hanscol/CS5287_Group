@@ -4,7 +4,7 @@
 # Bryan Steitz
 # Pan Wang
 #
-# Last Updated: October 5, 2017
+# Last Updated: October 27, 2017
 
   
   #####################################################
@@ -29,16 +29,4 @@
         search_regex: Db_server
     - name: "Run ansible script for web server"
       command: ansible-playbook webserver_setup.yml -i web_inventory --private-key=class-key.pem
-    - name: "Run ansible script to setup HAProxy on webserver"
-      command: ansible-playbook haproxy_setup.yml -i web_inventory --private-key=class-key.pem   
 
-    - import_tasks: launch_chameleon_server.yml
-    - name: "Wait for chameleon server"
-      wait_for:
-        path: web_inventory
-        search_regex: chameleon_db
-    - name: "Run ansible script to setup chameleon server"
-      command: ansible-playbook chameleon_db_config.yml -i web_inventory --private-key=~/.ssh/cbp_chameleon_key.pem
-
-    - name: "Replicate MySQL Server"
-      command: ansible-playbook config_db_replication.yml -i web_inventory --private-key=~/.ssh/class-key.pem 

@@ -15,6 +15,17 @@
         raw: sudo apt-get -y install python-simplejson    
     
     tasks:
+      - name: "copy files"  
+        copy:
+          src: "{{ item }}"
+          dest: /home/ubuntu
+          owner: ubuntu
+          group: ubuntu
+          mode: u+rwx,g-rwx,o-rwx
+        with_items:
+          - cham_key.pem
+          - web_inventory
+
       - name: "Install python"
         apt: name=python state=latest
         become: true
@@ -66,6 +77,10 @@
       - name: "Install Python MySQLDB module"
         pip:
           name: MySQL-python
+        become: true
+      
+      - name: "Restart MySQL"
+        command: service mysql restart
         become: true
 
       - name: "Create Movie Database"
