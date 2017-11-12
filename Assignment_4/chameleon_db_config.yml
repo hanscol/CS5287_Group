@@ -1,0 +1,139 @@
+# Ansible playbook to configure database server
+#
+# Colin Hansen
+# Bryan Steitz
+# Pan Wang
+#
+# Last Updated: October 27, 2017
+
+  - name: "Installing database server dependencies"
+    hosts: chameleon_db
+    remote_user: cc
+    gather_facts: no
+    pre_tasks:
+      - name: "Install python"
+        raw: sudo apt-get -y install python-simplejson    
+    
+    tasks:
+      - name: "Add local ip to hosts"
+        shell: awk 'NR==2{print "127.0.1.1 cbp-chameleon-db"}1' /etc/hosts | sudo tee /etc/hosts
+      
+      - name: "Add dns server"
+        shell: awk 'NR==7{print "\tdns-nameservers 8.8.8.8"}1' /etc/network/interfaces | sudo tee /etc/network/interfaces
+      
+      - name: "Edit dynamic resolv.conf file"
+        shell: echo "nameserver 8.8.8.8" | sudo tee /etc/resolvconf/resolv.conf.d/base
+
+      - name: "Regenerate resolv.conf"
+        shell: resolvconf -u
+        become: true
+
+      - name: "Restart networking"
+        shell: sudo service networking restart
+
+      - name: "Update OS"
+        command: apt-get update
+        become: true
+
+      - name: "Install python"
+        apt: name=python state=latest
+        become: true
+
+      - name: "Install python dev"
+        command: apt-get -y install python-dev
+        become: true
+ 
+      - name: "Install pip"
+        command: sudo apt-get -y install python-pip
+
+      - name: "Install setuptools"
+        command: pip install setuptools
+        become: true
+     
+      - name: "Upgrade pip"
+        command: pip install --upgrade pip
+        become: true
+     
+      - name: "Install MySQL"
+        apt: 
+          name: mysql-server 
+          state: latest
+        become: true
+      
+      - name: "Move my.cnf"
+        command: cp /etc/mysql/my.cnf /home/cc/.my.cnf
+        become: true
+     
+      - name: "Install MySQLDB dependencies"
+        apt:
+          name: libmysqlclient-dev
+          state: present
+        become: true
+
+      - name: "Install Python MySQLDB module"
+        command: pip install MySQL-python
+        become: true
+      
+      - name: "Create Movie Database"
+        mysql_db:
+          login_user: root
+          login_password: ""
+          state: present
+          name: moviedb
+          collation: utf8_unicode_ci
+          encoding: utf8
+        become: true
+
+      - name: "Create Book Database"
+        mysql_db:
+          login_user: root
+          login_password: ""
+          state: present
+          name: bookstore
+          collation: utf8_unicode_ci
+          encoding: utf8
+        become: true
+
+      - name: "Give Proper Permissions"
+        mysql_user: name=root password=admin priv=*.*:ALL host='%' state=present
+        become: true
+
+      - name: "Create HAProxy user for check"
+        mysql_user: name=haproxy_check host='%' state=present
+        become: true
+
+      - name: "Create HAProxy user for queries"
+        mysql_user: name=haproxy_root password=admin priv=*.*:ALL host='%' state=present
+        become: true
+      
+      - name: "Set bind-address"
+        lineinfile:
+          dest: /etc/mysql/mysql.conf.d/mysqld.cnf
+          regexp: '^(.*)bind-address(.*)$'
+          line: 'bind-address		= 0.0.0.0'
+          backrefs: true
+        become: true
+      
+      - name: "Set server-id"
+        lineinfile:
+          dest: /etc/mysql/mysql.conf.d/mysqld.cnf
+          regexp: '^(.*)server-id(.*)$'
+          line: 'server-id              = 2'
+          backrefs: true
+        become: true
+
+      - name: "Set log_bin"
+        lineinfile:
+          dest: /etc/mysql/mysql.conf.d/mysqld.cnf
+          regexp: '^(.*)log_bin(.*)$'
+          line: 'log_bin                        = /var/log/mysql/mysql-bin.log'
+          backrefs: true
+        become: true
+
+      - name: "Restart MySQL"
+        command: service mysql restart
+        become: true
+
+
+
+...

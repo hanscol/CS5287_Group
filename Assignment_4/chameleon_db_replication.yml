@@ -1,0 +1,44 @@
+# Ansible playbook to configure database server
+#
+# Colin Hansen
+# Bryan Steitz
+# Pan Wang
+#
+# Last Updated: October 27, 2017
+
+  - name: "Replicating database slave-side"
+    hosts: chameleon_db
+    remote_user: cc
+    gather_facts: no
+    
+    tasks:
+      - name: "Wait for Bookstore Dump"
+        wait_for:
+          path: /tmp/bookstore_dump.sql
+
+      - name: "Import Bookstore Dump"
+        mysql_db:
+          state: import
+          name: bookstore
+          target: /tmp/bookstore_dump.sql
+        become: true
+
+      - name: "Wait for Moviedb Dump"
+        wait_for:
+          path: /tmp/moviedb_dump.sql
+
+      - name: "Import Moviedb Dump"
+        mysql_db:
+          state: import
+          name: moviedb
+          target: /tmp/moviedb_dump.sql
+        become: true
+
+      - name: "Slave configuration"
+        command: mysql -e "change master to master_host='129.59.107.133', master_user='slave_user', master_password='admin';"
+        become: true
+      
+      - name: "Replicate"
+        command: mysql -e "start slave;"
+        become: true
+...

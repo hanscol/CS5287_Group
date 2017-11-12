@@ -1,0 +1,22 @@
+# Docker file for webserver image
+# 
+# Colin Hansen
+# Bryan Steitz
+# 
+# Last Updated: November 12, 2017
+#
+
+
+FROM ubuntu:16.04
+
+# Update Ubuntu and install packages
+RUN apt-get -y update && \
+    apt-get install -y python && \
+    apt-get install -y apache2 && \
+    apt-get install -y php libapache2-mod-php php-mcrypt php-mysql && \
+    apt-get install -y git
+
+# Remove original index file and clone git repo
+RUN rm /var/www/html/* && \
+    git clone https://github.com/doc-vu/phpMySQLapp /var/www/html/
+

@@ -1,0 +1,33 @@
+# Master Ansible playbook
+#
+# Colin Hansen
+# Bryan Steitz
+# Pan Wang
+#
+# Last Updated: October 27, 2017
+
+  
+  #####################################################
+  ### Local VM Steps
+  #####################################################
+
+  - name: "Master File for Local VM"
+    hosts: localVMs
+    remote_user: ubuntu
+
+    ### Install tasks
+    tasks:
+
+    - import_tasks: local_config_playbook.yml
+    - import_tasks: launch_servers.yml
+    - name: "Wait for webservers"
+      wait_for:
+        path: web_inventory
+        search_regex: Webserver
+      wait_for:
+        path: web_inventory
+        search_regex: Db_server
+    - name: "Run ansible script for web server"
+      command: ansible-playbook webserver_setup.yml -i web_inventory --private-key=class-key.pem
+    - name: "Create docker images"
+      command: ansible-playbook create_containers.yml -i web_inventory --private-key=class-key.pem

@@ -1,0 +1,88 @@
+# Ansible playbook for installing HAProxy on webserver
+#
+# Colin Hansen
+# Bryan Steitz
+# Pan Wang
+#
+# Last Updated: October 27, 2017
+
+  #####################################################
+  ### Setup HAProxy
+  #####################################################
+  - name: "Setup HAProxy"
+    hosts: Webserver
+    remote_user: ubuntu
+    gather_facts: no
+    tasks:
+  
+    - name: "Install mysql-client"
+      apt: name=mysql-client
+      become: true
+    
+    - name: "Install HAProxy"
+      apt: name=haproxy state=latest
+      become: true
+    
+    - name: "Enable HAProxy to be started by the init script"
+      command: sed -i "s/ENABLED=0/ENABLED=1/" /etc/default/haproxy
+      become: true
+    
+    - name: "Create HAProxy.cfg file"
+      command: bash -c 'printf "global\n    log 127.0.0.1 local0 notice\n    user haproxy\n    group haproxy\n\ndefaults\n    log global\n    retries 2\n    timeout connect 3000\n    timeout server 5000\n    timeout client 5000\n\nlisten mysql-cluster\n    bind 0.0.0.0:3306\n    mode tcp\n    option mysql-check user haproxy_check\n    balance roundrobin\n    server mysql-1 10.0.0.1:3306 check\n    server mysql-2 10.0.0.2:3306 check" > /etc/haproxy/haproxy.cfg'
+      become: true
+
+    - name: "Write DB IP to HAProxy.cfg file"
+      lineinfile:
+        dest: /etc/haproxy/haproxy.cfg
+        regexp: '^(.*)server mysql-1(.*)$'
+        line: '    server mysql-1 {{ item }}:3306 check'
+        backrefs: true
+      become: true
+      with_items:
+          - "{{ groups['Db_server'][0] }}"
+    
+    - name: "Write DB IP to HAProxy.cfg file"
+      lineinfile:
+        dest: /etc/haproxy/haproxy.cfg
+        regexp: '^(.*)server mysql-2(.*)$'
+        line: '    server mysql-2 {{ item }}:3306 check'
+        backrefs: true
+      become: true
+      with_items:
+          - "{{ groups['chameleon_db'][0] }}"
+
+    - name: "Start HAProxy"
+      command: service haproxy restart
+      become: true
+    
+    - name: "Update bookDatabase.php with DB IP"
+      lineinfile:
+        dest: /var/www/html/phpMySQLapp/books/includes/bookDatabase.php
+        regexp: '^(.*)servername =(.*)$'
+        line: '$servername = "127.0.0.1";'
+        backrefs: true
+      become: true
+    
+    - name: "Update movieDatabase.php with DB IP"
+      lineinfile:
+        dest: /var/www/html/phpMySQLapp/movies/includes/movieDatabase.php
+        regexp: '^(.*)servername =(.*)$'
+        line: '$servername = "127.0.0.1";'
+        backrefs: true
+      become: true
+    
+    - name: "Update bookDatabase.php with DB IP"
+      lineinfile:
+        dest: /var/www/html/phpMySQLapp/books/includes/bookDatabase.php
+        regexp: '^(.*)username =(.*)$'
+        line: '$username = "haproxy_root";'
+        backrefs: true
+      become: true
+    
+    - name: "Update movieDatabase.php with DB IP"
+      lineinfile:
+        dest: /var/www/html/phpMySQLapp/movies/includes/movieDatabase.php
+        regexp: '^(.*)username =(.*)$'
+        line: '$username = "haproxy_root";'
+        backrefs: true
+      become: true

@@ -1,0 +1,12 @@
+# Local machines
+[localVMs]
+127.0.0.1  ansible_connection=local
+
+# Horizon webserver and database server, respectively
+
+[Webserver]
+129.59.107.162 ansible_connection=ssh
+
+[Db_server]
+129.59.107.85 ansible_connection=ssh
+

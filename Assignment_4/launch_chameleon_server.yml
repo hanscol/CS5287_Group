@@ -1,0 +1,36 @@
+# Ansible playbook for launching chameleon database server
+#
+# Colin Hansen
+# Bryan Steitz
+# Pan Wang
+#
+# Last Updated: October 18, 2017
+
+  #####################################################
+  ### Launch Chameleon server
+  #####################################################
+  - name: "Set Chameleon cloud variables"
+    set_fact:
+      os_auth:
+        auth_url: "https://openstack.tacc.chameleoncloud.org:5000/v2.0"
+        tenant_id: "CH-819381"
+        tenant_name: "CH-819381"
+        project_name: "CH-819381"
+        username: ""
+        password: ""
+
+  - name: "Launch Chameleon database server"
+    os_server:
+      auth: "{{ os_auth }}"
+      name: "cbp_chameleon_db"
+      image: "CC-Ubuntu16.04"
+      flavor: "m1.small"
+      nics: "net-id=da34df32-e807-4335-8d8d-c91760dfcd3a"
+      key_name: "cham_key"
+      security_groups: "cbp_chameleon"
+      auto_ip: yes
+    register: chameleon_db
+
+  - name: "Add Chameleon server IP to inventory"
+    shell: echo -e "[chameleon_db]\n{{ chameleon_db.server.public_v4 }} ansible_connection=ssh" >> /vagrant/web_inventory
+    when: chameleon_db.changed
