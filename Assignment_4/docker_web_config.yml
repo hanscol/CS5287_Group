@@ -1,0 +1,33 @@
+- name: "Installing webserver docker dependencies"
+  hosts: localhost
+  remote_user: root
+  gather_facts: no
+
+  tasks:
+    - name: "Update bookDatabase.php with DB IP"
+      lineinfile:
+        dest: /var/www/html/phpMySQLapp/books/includes/bookDatabase.php
+        regexp: '^(.*)servername =(.*)$'
+        line: '$servername = "{{ item }}";'
+        backrefs: true
+      with_items:
+          - "{{ groups['Db_server'][0] }}"
+
+    - name: "Update movieDatabase.php with DB IP"
+      lineinfile:
+        dest: /var/www/html/phpMySQLapp/movies/includes/movieDatabase.php
+        regexp: '^(.*)servername =(.*)$'
+        line: '$servername = "{{ item }}";'
+        backrefs: true
+      with_items:
+          - "{{ groups['Db_server'][0] }}"
+
+    - name: "Update dir.conf"
+      lineinfile:
+        dest: /etc/apache2/mods-enabled/dir.conf
+        regexp: '^(.*)DirectoryIndex(.*)$'
+        line: ' DirectoryIndex index.php index.html index.cgi index.pl index.xhtml index.htm'
+        backrefs: true
+
+    - name: "Restart Apache"
+      command: service apache2 restart
