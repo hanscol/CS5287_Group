@@ -6,7 +6,7 @@
   tasks:
     - name: "Update bookDatabase.php with DB IP"
       lineinfile:
-        dest: /var/www/html/phpMySQLapp/books/includes/bookDatabase.php
+        dest: /var/www/example.com/public_html/books/includes/bookDatabase.php
         regexp: '^(.*)servername =(.*)$'
         line: '$servername = "{{ item }}";'
         backrefs: true
@@ -15,7 +15,7 @@
 
     - name: "Update movieDatabase.php with DB IP"
       lineinfile:
-        dest: /var/www/html/phpMySQLapp/movies/includes/movieDatabase.php
+        dest: /var/www/example.com/public_html/movies/includes/movieDatabase.php
         regexp: '^(.*)servername =(.*)$'
         line: '$servername = "{{ item }}";'
         backrefs: true

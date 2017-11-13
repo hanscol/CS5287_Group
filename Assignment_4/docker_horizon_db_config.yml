@@ -1,0 +1,50 @@
+- name: "Installing database server docker dependencies"
+  hosts: localhost
+  remote_user: root
+  gather_facts: no
+
+  tasks:
+    - name: "Create Movie Database"
+      mysql_db:
+        login_user: root
+        login_password: "Admin2015"
+        state: present
+        name: moviedb
+        collation: utf8_unicode_ci
+        encoding: utf8
+
+    - name: "Create Book Database"
+      mysql_db:
+        login_user: root
+        login_password: "Admin2015"
+        state: present
+        name: bookstore
+        collation: utf8_unicode_ci
+        encoding: utf8
+
+    - name: "Populate Movie Database"
+      mysql_db: login_user=root login_password="Admin2015" state=import name=moviedb target=/root/app_data/mySqlDB/movieDB.sql collation=utf8_unicode_ci encoding=utf8
+
+    - name: "Populate Book Database"
+      mysql_db: login_user=root login_password="Admin2015" state=import name=moviedb target=/root/app_data/mySqlDB/bookDB.sql collation=utf8_unicode_ci encoding=utf8
+
+    - name: "Give MySQL permissions"
+      command: >
+        mysql --user=root --password=Admin2015 --execute="GRANT ALL ON *.* TO 'root' IDENTIFIED BY 'Admin2015';"
+
+    - name: "Set bind-address"
+      lineinfile:
+        dest: /etc/mysql/my.cnf
+        regexp: '^(.*)bind-address(.*)$'
+        line: 'bind-address           = 0.0.0.0'
+        backrefs: true
+
+    - name: "Reset MySQL root password"
+      command: mysqladmin -u root -p'Admin2015' password 'admin'
+
+    - name: "Restart MySQL"
+      command: service mysql restart
+
+...
+
+
