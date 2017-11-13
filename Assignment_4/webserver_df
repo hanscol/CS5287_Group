@@ -6,18 +6,16 @@
 # Last Updated: November 12, 2017
 #
 
-
-FROM ubuntu:16.04
+FROM linode/lamp
 
 # Update Ubuntu and install packages
 RUN apt-get -y update && \
     apt-get install -y python && \
-    apt-get install -y apache2 && \
-    apt-get install -y php libapache2-mod-php php-mcrypt php-mysql && \
-    apt-get install -y git
+    apt-get install -y git && \
+    apt-get install -y ansible
 
 # Remove original index file and clone git repo
-RUN rm /var/www/html/* && \
-    git clone https://github.com/doc-vu/phpMySQLapp /var/www/html/
+RUN rm /var/www/example.com/public_html/* && \
+    git clone https://github.com/doc-vu/phpMySQLapp /var/www/example.com/public_html/
 
-EXPOSE 80
+CMD apachectl -D FOREGROUND
