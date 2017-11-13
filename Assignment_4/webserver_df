@@ -12,10 +12,13 @@ FROM linode/lamp
 RUN apt-get -y update && \
     apt-get install -y python && \
     apt-get install -y git && \
-    apt-get install -y ansible
+    apt-get install -y ansible && \
+    apt-get -y update
 
 # Remove original index file and clone git repo
 RUN rm /var/www/example.com/public_html/* && \
     git clone https://github.com/doc-vu/phpMySQLapp /var/www/example.com/public_html/
 
-CMD apachectl -D FOREGROUND
+COPY docker_web_config.yml /
+COPY web_inventory /
+COPY class-key.pem /
