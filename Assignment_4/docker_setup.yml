@@ -1,0 +1,42 @@
+# Ansible playbook to configure webserver
+#
+# Colin Hansen
+# Bryan Steitz
+# Pan Wang
+#
+# Last Updated: November 12, 2017
+
+
+
+    ##########################
+    # Docker setup
+    ##########################
+    
+    - name: "Install docker dependencies"
+      command: apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+      become: true
+
+    - name: "Install docker-py"
+      command: pip install docker-py
+      become: true
+
+    - name: "Add docker GPG key"
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+      become: true 
+
+    - name: "Setup Repository"
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable"
+      become: true
+
+    - name: "Update apt"
+      command: apt-get update
+      become: true
+
+    - name: "Install docker-ce"
+      command: apt-get install -y docker-ce
+      become: true
+
+
+... 

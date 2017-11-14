@@ -31,7 +31,7 @@
         - dbserver_config.yml
         - web_inventory
         - cbp_chameleon_key.pem
-    - import_tasks: webserver_config.yml
+    - import_tasks: docker_setup.yml
     - import_tasks: create_containers.yml
 #    - name: "Run ansible script for database server"
 #      command: ansible-playbook dbserver_config.yml -i web_inventory --private-key=class-key.pem
