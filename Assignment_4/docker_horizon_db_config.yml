@@ -30,7 +30,7 @@
 
     - name: "Give MySQL permissions"
       command: >
-        mysql --user=root --password=Admin2015 --execute="GRANT ALL ON *.* TO 'root' IDENTIFIED BY 'Admin2015';"
+        mysql --user=root --password=Admin2015 --execute="GRANT ALL ON *.* TO 'root'@'%' IDENTIFIED BY 'Admin2015';"
 
     - name: "Set bind-address"
       lineinfile:
