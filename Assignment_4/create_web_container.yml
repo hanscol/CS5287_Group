@@ -1,0 +1,21 @@
+# Ansible playbook for configuring webserver
+#   and launching database server playbook
+#
+# Colin Hansen
+# Bryan Steitz
+# Pan Wang
+#
+# Last Updated: October 5, 2017
+
+  #####################################################
+  ### Setup Docker Containers
+  #####################################################
+    - name: "Launch webserver container"
+      command: docker build -f webserver_df -t webserver .
+      become: true
+#      docker_container:
+#        name: webserver
+#        image: ubuntu:16.04
+    - name: "Start webserver container"
+      command: docker run -it -d --name="webdock" -p 80:80 webserver
+      become: true

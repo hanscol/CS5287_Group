@@ -11,6 +11,7 @@ FROM linode/lamp
 # Update Ubuntu and install packages
 RUN apt-get -y update && \
     apt-get install -y python && \
+    apt-get install -y python-apt && \
     apt-get install -y git && \
     apt-get install -y ansible && \
     apt-get -y update
@@ -22,3 +23,8 @@ RUN rm /var/www/example.com/public_html/* && \
 COPY docker_web_config.yml /
 COPY web_inventory /
 COPY class-key.pem /
+
+#is this allowed?
+RUN ansible-playbook docker_web_config.yml -i /web_inventory --private-key=/class-key.pem
+
+#CMD apachectl -D FOREGROUND

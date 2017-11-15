@@ -4,33 +4,84 @@
   gather_facts: no
 
   tasks:
+#some tasks may be redundant with the RUN commands already executed in docker file
+    - name: "Install python"
+      apt: name=python state=latest
+    
+    - name: "Update OS"
+      command: apt-get update
+    
+    - name: "Install git"
+      command: apt-get install -y git
+    
+    - stat: path=/root/phpMySQLapp
+      register: gitrepo
+    
+    - name: "Clone git repo"
+      command: git clone https://github.com/doc-vu/phpMySQLapp
+      args:
+        chdir: "/root/"
+      when: gitrepo.stat.exists == False
+    
+    - name: "Install pip"
+      apt:
+        name: python-pip
+        state: latest
+    
+#    - name: "Upgrade pip"
+#      command: pip install --upgrade pip
+    
+    - name: "Install MySQL"
+      apt: 
+        name: mysql-server 
+        state: latest
+    
+    - name: "Move my.cnf"
+      command: cp /etc/mysql/my.cnf /root/.my.cnf
+    
+    - name: "Install MySQLDB dependencies"
+      apt:
+        name: libmysqlclient-dev
+        state: present
+
+    - name: "Install Python MySQLDB module"
+      pip:
+        name: MySQL-python
+    
+    - name: "Restart MySQL"
+      command: service mysql restart
+
     - name: "Create Movie Database"
       mysql_db:
         login_user: root
-        login_password: "Admin2015"
+        login_password: ""
         state: present
         name: moviedb
         collation: utf8_unicode_ci
         encoding: utf8
+      become: true
 
     - name: "Create Book Database"
       mysql_db:
         login_user: root
-        login_password: "Admin2015"
+        login_password: ""
         state: present
         name: bookstore
         collation: utf8_unicode_ci
         encoding: utf8
 
     - name: "Populate Movie Database"
-      mysql_db: login_user=root login_password="Admin2015" state=import name=moviedb target=/root/app_data/mySqlDB/movieDB.sql collation=utf8_unicode_ci encoding=utf8
+      mysql_db: login_user=root login_password="" state=import name=moviedb target=/root/phpMySQLapp/mySqlDB/movieDB.sql collation=utf8_unicode_ci encoding=utf8
 
     - name: "Populate Book Database"
-      mysql_db: login_user=root login_password="Admin2015" state=import name=moviedb target=/root/app_data/mySqlDB/bookDB.sql collation=utf8_unicode_ci encoding=utf8
+      mysql_db: login_user=root login_password="" state=import name=moviedb target=/root/phpMySQLapp/mySqlDB/bookDB.sql collation=utf8_unicode_ci encoding=utf8
 
-    - name: "Give MySQL permissions"
-      command: >
-        mysql --user=root --password=Admin2015 --execute="GRANT ALL ON *.* TO 'root'@'%' IDENTIFIED BY 'Admin2015';"
+# don't necessarily need this since we just need the two haproxy users
+#
+#    - name: "Give MySQL permissions"
+#      command: >
+#        mysql --user=root --execute="GRANT ALL ON *.* TO 'root'@'%' IDENTIFIED BY '';"
+#      become: true
 
     - name: "Set bind-address"
       lineinfile:
@@ -39,12 +90,65 @@
         line: 'bind-address           = 0.0.0.0'
         backrefs: true
 
-    - name: "Reset MySQL root password"
-      command: mysqladmin -u root -p'Admin2015' password 'admin'
+#    - name: "Reset MySQL root password"
+#      command: mysqladmin -u root -p'Admin2015' password 'admin'
+
+#This is not working, we need a haproxy user that isn't required to use a password
+#This is simply for checking if the database is accessible
+#
+    - name: "Create HAProxy user for check"
+      mysql_user: name=haproxy_check host='%' state=present
+      become: true
+
+    - name: "Create HAProxy user for queries"
+      mysql_user: name=haproxy_root password=admin priv=*.*:ALL host='%' state=present
+    
+    - name: "Set server-id"
+      lineinfile:
+        dest: /etc/mysql/mysql.conf.d/mysqld.cnf
+        regexp: '^(.*)server-id(.*)$'
+        line: 'server-id              = 1'
+        backrefs: true
+
+    - name: "Set log_bin"
+      lineinfile:
+        dest: /etc/mysql/mysql.conf.d/mysqld.cnf
+        regexp: '^(.*)log_bin(.*)$'
+        line: 'log_bin                        = /var/log/mysql/mysql-bin.log'
+        backrefs: true
+
+    - name: "Add movie db"
+      shell: awk 'NR==87{print "binlog_do_db            = moviedb"}1' /etc/mysql/mysql.conf.d/mysqld.cnf | tee /etc/mysql/mysql.conf.d/mysqld.cnf
+
+    - name: "Add bookstore db"
+      shell: awk 'NR==88{print "binlog_do_db            = bookstore"}1' /etc/mysql/mysql.conf.d/mysqld.cnf | tee /etc/mysql/mysql.conf.d/mysqld.cnf
+
+    - name: "Grant slave access"
+      mysql_user: name=slave_user host='%' password=admin priv="*.*:REPLICATION SLAVE" state=present
+
+    - name: "Dump bookstore"
+      mysql_db:
+        state: dump
+        name: bookstore
+        target: /tmp/bookstore_dump.sql
+
+    - name: "Move bookstore dump to chameleon"
+      command: scp -i cbp_chameleon_key.pem -o StrictHostKeyChecking=no /tmp/bookstore_dump.sql cc@{{ item }}:/tmp/bookstore_dump.sql
+      with_items: 
+          - "{{ groups['chameleon_db'][0] }}"
+    
+    - name: "Dump moviedb"
+      mysql_db:
+        state: dump
+        name: moviedb
+        target: /tmp/moviedb_dump.sql
+
+    - name: "Move bookstore dump to chameleon"
+      command: scp -i cbp_chameleon_key.pem -o StrictHostKeyChecking=no /tmp/moviedb_dump.sql cc@{{ item }}:/tmp/moviedb_dump.sql
+      with_items: 
+          - "{{ groups['chameleon_db'][0] }}"
 
     - name: "Restart MySQL"
       command: service mysql restart
 
 ...
-
-
