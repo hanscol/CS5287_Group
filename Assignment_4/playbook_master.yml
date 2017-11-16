@@ -18,65 +18,28 @@
     ### Install tasks
     tasks:
 
-#    - import_tasks: local_config_playbook.yml
-#    - import_tasks: launch_servers.yml
-#    - import_tasks: launch_chameleon_server.yml
-#    - name: "Wait for webservers"
-#      wait_for:
-#        path: web_inventory
-#        search_regex: Webserver
-#      wait_for:
-#        path: web_inventory
-#        search_regex: Db_server
-#    - name: "Run ansible script for web server"
-#      command: ansible-playbook webserver_setup.yml -i web_inventory --private-key=class-key.pem
-#    - name: "Create docker images"
-#      command: ansible-playbook create_containers.yml -i web_inventory --private-key=class-key.pem
+    - import_tasks: local_config_playbook.yml
+    - import_tasks: launch_servers.yml
+    - import_tasks: launch_chameleon_server.yml
+    - name: "Wait for webservers"
+      wait_for:
+        path: web_inventory
+        search_regex: Webserver
+      wait_for:
+        path: web_inventory
+        search_regex: Db_server
   
   - name: "Install webserver dependencies"
     hosts: Webserver
     remote_user: ubuntu
     gather_facts: no
-#    pre_tasks:
-#      - name: "Install python"
-#        raw: sudo apt-get -y install python-simplejson
-#      - name: "update"
-#        raw: sudo apt-get update
-#      - name: "Install pip"
-#        raw: sudo apt-get -y install python-pip
-    tasks:
-#    - name: "copy files"  
-#      copy:
-#        src: "{{ item }}"
-#        dest: /home/ubuntu
-#        owner: ubuntu
-#        group: ubuntu
-#        mode: u+rw,u-x,g-rwx,o-rwx
-#      with_items:
-#        - .ansible.cfg
-#        - class-key.pem
-#        - dbserver_config.yml
-#        - web_inventory
-#        - docker_setup.yml
-#        - docker_web_config.yml
-#        - webserver_df
-#    - import_tasks: docker_setup.yml
-#    - import_tasks: create_web_container.yml
-#    - name: "Start Apache"
-#      command: docker exec webdock bash -c "service apache2 start"
-#      become: true
-  
-  - name: "Install db server dependencies"
-    hosts: Db_server
-    remote_user: ubuntu
-    gather_facts: no
-#    pre_tasks:
-#      - name: "Install python"
-#        raw: sudo apt-get -y install python-simplejson
-#      - name: "update"
-#        raw: sudo apt-get update
-#      - name: "Install pip"
-#        raw: sudo apt-get -y install python-pip
+    pre_tasks:
+      - name: "Install python"
+        raw: sudo apt-get -y install python-simplejson
+      - name: "update"
+        raw: sudo apt-get update
+      - name: "Install pip"
+        raw: sudo apt-get -y install python-pip
     tasks:
     - name: "copy files"  
       copy:
@@ -86,13 +49,52 @@
         group: ubuntu
         mode: u+rw,u-x,g-rwx,o-rwx
       with_items:
-#        - .ansible.cfg
-#        - class-key.pem
-#        - cbp_chameleon_key.pem
-#        - dbserver_config.yml
-#        - web_inventory
-#        - docker_setup.yml
+        - .ansible.cfg
+        - class-key.pem
+        - dbserver_config.yml
+        - web_inventory
+        - docker_setup.yml
+        - docker_web_config.yml
+        - webserver_df
+    - import_tasks: docker_setup.yml
+    - import_tasks: create_web_container.yml
+    - name: "Configure web container"
+      command: docker exec webdock bash -c "ansible-playbook /docker_web_config.yml -i /web_inventory --private-key=/class-key.pem"
+      become: true
+    - name: "Start Apache"
+      command: docker exec webdock bash -c "service apache2 start"
+      become: true
+ 
+  - name: "Install db server dependencies"
+    hosts: Db_server
+    remote_user: ubuntu
+    gather_facts: no
+    pre_tasks:
+      - name: "Install python"
+        raw: sudo apt-get -y install python-simplejson
+      - name: "update"
+        raw: sudo apt-get update
+      - name: "Install pip"
+        raw: sudo apt-get -y install python-pip
+    tasks:
+    - name: "copy files"  
+      copy:
+        src: "{{ item }}"
+        dest: /home/ubuntu
+        owner: ubuntu
+        group: ubuntu
+        mode: u+rw,u-x,g-rwx,o-rwx
+      with_items:
+        - .ansible.cfg
+        - class-key.pem
+        - cbp_chameleon_key.pem
+        - dbserver_config.yml
+        - web_inventory
+        - docker_setup.yml
         - docker_horizon_db_config.yml
         - horizon_db_df
-#    - import_tasks: docker_setup.yml
-#    - import_tasks: create_horizon_db_container.yml
+    - import_tasks: docker_setup.yml
+    - import_tasks: create_horizon_db_container.yml
+    - name: "Configure horizon db container"
+      command: docker exec dbdock bash -c "ansible-playbook /docker_horizon_db_config.yml -i /web_inventory --private-key=/class-key.pem"
+      become: true

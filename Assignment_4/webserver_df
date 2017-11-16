@@ -25,6 +25,6 @@ COPY web_inventory /
 COPY class-key.pem /
 
 #is this allowed?
-RUN ansible-playbook docker_web_config.yml -i /web_inventory --private-key=/class-key.pem
+#RUN ansible-playbook docker_web_config.yml -i /web_inventory --private-key=/class-key.pem
 
 #CMD apachectl -D FOREGROUND

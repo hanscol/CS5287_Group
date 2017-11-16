@@ -4,7 +4,6 @@
   gather_facts: no
 
   tasks:
-#some tasks may be redundant with the RUN commands already executed in docker file
     - name: "Install python"
       apt: name=python state=latest
     
@@ -28,8 +27,8 @@
         name: python-pip
         state: latest
     
-#    - name: "Upgrade pip"
-#      command: pip install --upgrade pip
+    - name: "Upgrade pip"
+      command: pip install --upgrade pip
     
     - name: "Install MySQL"
       apt: 
@@ -74,14 +73,11 @@
       mysql_db: login_user=root login_password="" state=import name=moviedb target=/root/phpMySQLapp/mySqlDB/movieDB.sql collation=utf8_unicode_ci encoding=utf8
 
     - name: "Populate Book Database"
-      mysql_db: login_user=root login_password="" state=import name=moviedb target=/root/phpMySQLapp/mySqlDB/bookDB.sql collation=utf8_unicode_ci encoding=utf8
+      mysql_db: login_user=root login_password="" state=import name=bookstore target=/root/phpMySQLapp/mySqlDB/bookDB.sql collation=utf8_unicode_ci encoding=utf8
 
-# don't necessarily need this since we just need the two haproxy users
-#
-#    - name: "Give MySQL permissions"
-#      command: >
-#        mysql --user=root --execute="GRANT ALL ON *.* TO 'root'@'%' IDENTIFIED BY '';"
-#      become: true
+    - name: "Give MySQL permissions"
+      mysql_user: name=root password=admin priv=*.*:ALL host='%' state=present
+      become: true
 
     - name: "Set bind-address"
       lineinfile:
@@ -93,12 +89,12 @@
 #    - name: "Reset MySQL root password"
 #      command: mysqladmin -u root -p'Admin2015' password 'admin'
 
-#This is not working, we need a haproxy user that isn't required to use a password
-#This is simply for checking if the database is accessible
-#
+#    - name: "Create HAProxy user for check"
+#      mysql_user: name=haproxy_check host='%' state=present
+#      become: true
+
     - name: "Create HAProxy user for check"
-      mysql_user: name=haproxy_check host='%' state=present
-      become: true
+      command: mysql -e "create user haproxy_check"
 
     - name: "Create HAProxy user for queries"
       mysql_user: name=haproxy_root password=admin priv=*.*:ALL host='%' state=present

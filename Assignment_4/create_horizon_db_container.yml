@@ -16,6 +16,6 @@
 #      docker_container:
 #        name: webserver
 #        image: ubuntu:16.04
-    - name: "Start webserver container"
+    - name: "Start db server container"
       command: docker run -it -d --name="dbdock" -p 3306:3306 horizon
       become: true
