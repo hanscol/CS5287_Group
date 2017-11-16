@@ -27,6 +27,9 @@
         name: python-pip
         state: latest
     
+    - name: "Pip upgrade dependencies?"
+      command: easy_install pip
+
     - name: "Upgrade pip"
       command: pip install --upgrade pip
     

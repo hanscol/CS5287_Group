@@ -98,3 +98,49 @@
     - name: "Configure horizon db container"
       command: docker exec dbdock bash -c "ansible-playbook /docker_horizon_db_config.yml -i /web_inventory --private-key=/class-key.pem"
       become: true
+
+  - name: "Install chameleon db server dependencies"
+    hosts: chameleon_db
+    remote_user: cc
+    gather_facts: no
+    vars:
+      ansible_ssh_private_key_file: "./cbp_chameleon_key.pem"
+    pre_tasks:
+      - name: "Install python"
+        raw: sudo apt-get -y install python-simplejson
+      - name: "update"
+        raw: sudo apt-get update
+      - name: "Install pip"
+        raw: sudo apt-get -y install python-pip
+    tasks:
+    - name: "copy files"  
+      copy:
+        src: "{{ item }}"
+        dest: /home/cc
+        owner: cc
+        group: cc
+        mode: u+rw,u-x,g-rwx,o-rwx
+      with_items:
+        - .ansible.cfg
+        - class-key.pem
+        - cbp_chameleon_key.pem
+        - web_inventory
+        - docker_chameleon_db_config.yml
+        - chameleon_db_df
+    - import_tasks: docker_setup.yml
+    - import_tasks: create_chameleon_db_container.yml
+    - name: "Wait for Bookstore Dump"
+      wait_for:
+        path: /tmp/bookstore_dump.sql
+    - name: "Copy Bookstore Dump to Container"
+      command: docker cp /tmp/bookstore_dump.sql dbdock:/
+      become: true
+    - name: "Wait for Moviedb Dump"
+      wait_for:
+        path: /tmp/moviedb_dump.sql
+    - name: "Copy Moviedb Dump to Container"
+      command: docker cp /tmp/moviedb_dump.sql dbdock:/
+      become: true
+    - name: "Configure chameleon db container"
+      command: docker exec dbdock bash -c "ansible-playbook /docker_chameleon_db_config.yml -i /web_inventory --private-key=/cbp_chameleon_key.pem"
+      become: true

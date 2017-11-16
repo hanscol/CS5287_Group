@@ -1,0 +1,118 @@
+- name: "Installing database server docker dependencies"
+  hosts: localhost
+  remote_user: root
+  gather_facts: no
+
+  tasks:
+    - name: "Add local ip to hosts"
+      shell: awk 'NR==2{print "127.0.1.1 cbp-chameleon-db"}1' /etc/hosts | tee /etc/hosts
+    
+    - name: "Update OS"
+      command: apt-get update
+
+    - name: "Install python"
+      apt: name=python state=latest
+
+    - name: "Install python dev"
+      command: apt-get -y install python-dev
+ 
+    - name: "Install pip"
+      command: apt-get -y install python-pip
+
+    - name: "Install setuptools"
+      command: pip install setuptools
+    
+    - name: "Upgrade pip"
+      command: pip install --upgrade pip
+    
+    - name: "Install MySQL"
+      apt: 
+        name: mysql-server 
+        state: latest
+    
+    - name: "Move my.cnf"
+      command: cp /etc/mysql/my.cnf /root/.my.cnf
+    
+    - name: "Install MySQLDB dependencies"
+      apt:
+        name: libmysqlclient-dev
+        state: present
+
+    - name: "Install Python MySQLDB module"
+      command: pip install MySQL-python
+
+    - name: "Start mysql"
+      command: service mysql start
+    
+    - name: "Create Movie Database"
+      mysql_db:
+        login_user: root
+        login_password: ""
+        state: present
+        name: moviedb
+        collation: utf8_unicode_ci
+        encoding: utf8
+
+    - name: "Create Book Database"
+      mysql_db:
+        login_user: root
+        login_password: ""
+        state: present
+        name: bookstore
+        collation: utf8_unicode_ci
+        encoding: utf8
+
+    - name: "Give Proper Permissions"
+      mysql_user: name=root password=admin priv=*.*:ALL host='%' state=present
+
+    - name: "Create HAProxy user for check"
+      command: mysql -e "create user haproxy_check"
+
+    - name: "Create HAProxy user for queries"
+      mysql_user: name=haproxy_root password=admin priv=*.*:ALL host='%' state=present
+    
+    - name: "Set bind-address"
+      lineinfile:
+        dest: /etc/mysql/mysql.conf.d/mysqld.cnf
+        regexp: '^(.*)bind-address(.*)$'
+        line: 'bind-address		= 0.0.0.0'
+        backrefs: true
+    
+    - name: "Set server-id"
+      lineinfile:
+        dest: /etc/mysql/mysql.conf.d/mysqld.cnf
+        regexp: '^(.*)server-id(.*)$'
+        line: 'server-id              = 2'
+        backrefs: true
+
+    - name: "Set log_bin"
+      lineinfile:
+        dest: /etc/mysql/mysql.conf.d/mysqld.cnf
+        regexp: '^(.*)log_bin(.*)$'
+        line: 'log_bin                        = /var/log/mysql/mysql-bin.log'
+        backrefs: true
+
+    - name: "Restart MySQL"
+      command: service mysql restart
+
+    - name: "Import Bookstore Dump"
+      mysql_db:
+        state: import
+        name: bookstore
+        target: /bookstore_dump.sql
+
+    - name: "Import Moviedb Dump"
+      mysql_db:
+        state: import
+        name: moviedb
+        target: /moviedb_dump.sql
+
+    - name: "Slave configuration"
+      command: mysql -e "change master to master_host='{{ item }}', master_user='slave_user', master_password='admin';"
+      with_items: 
+        - "{{ groups['Db_server'][0] }}"
+
+    - name: "Replicate"
+      command: mysql -e "start slave;"
+
+...

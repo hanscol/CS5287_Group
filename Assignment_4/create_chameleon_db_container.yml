@@ -11,11 +11,8 @@
   ### Setup Docker Containers
   #####################################################
     - name: "Launch db server container"
-      command: docker build -f horizon_db_df -t horizon .
+      command: docker build -f chameleon_db_df -t chameleon .
       become: true
-#      docker_container:
-#        name: webserver
-#        image: ubuntu:16.04
     - name: "Start db server container"
-      command: docker run -it -d --name="dbdock" -p 3306:3306 horizon
+      command: docker run -it -d --name="dbdock" -p 3306:3306 chameleon
       become: true

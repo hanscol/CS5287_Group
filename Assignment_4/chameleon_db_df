@@ -1,0 +1,41 @@
+# Docker file for Horizon DB image
+# 
+# Colin Hansen
+# Bryan Steitz
+# 
+# Last Updated: November 12, 2017
+#
+
+
+FROM ubuntu:16.04
+
+# Update Ubuntu and install packages
+RUN apt-get -y update && \
+    apt-get install -y ansible && \
+    apt-get install -y python && \
+    apt-get install -y python-apt
+
+#I think pip upgrade was giving me some issues
+#
+#    apt-get install -y git && \
+#    apt-get install -y python-pip && \
+#    pip install --upgrade pip && \
+#    apt-get install -y mysql-server
+#
+# Copy my.cnf
+#RUN cp /etc/mysql/my.cnf /home/ubuntu/.my.cnf
+
+COPY docker_chameleon_db_config.yml /
+COPY web_inventory /
+COPY class-key.pem /
+COPY cbp_chameleon_key.pem /
+
+# Install MySQL Dependencies
+#RUN apt-get install -y libmysqlclient-dev && \
+#    pip install MySQL-python && \
+#    service mysql restart
+
+#Command for running the ansible playbook, I've been launching a container and
+# using docker exec to run ansible for testing purposes.
+#
+#RUN ansible-playbook docker_horizon_db_config.yml -i /web_inventory --private-key=/class-key.pem
