@@ -93,6 +93,7 @@
         - docker_setup.yml
         - docker_horizon_db_config.yml
         - horizon_db_df
+        - mysqld.cnf.j2
     - import_tasks: docker_setup.yml
     - import_tasks: create_horizon_db_container.yml
     - name: "Configure horizon db container"
