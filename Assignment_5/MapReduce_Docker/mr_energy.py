@@ -41,7 +41,7 @@ def parseCmdLineArgs ():
     parser = argparse.ArgumentParser ()
 
     # add optional arguments
-    parser.add_argument ("-i", "--iters", type=int, default=20, help="Number of iterations, default 20")
+    parser.add_argument ("-i", "--iters", type=int, default=1, help="Number of iterations, default 20")
     parser.add_argument ("-f", "--metricsfile", default="metrics.csv", help="Output file to collect metrics, default metrics.csv")
     parser.add_argument ("-M", "--map", type=int, default=10, help="Number of Map jobs, default 10")
     parser.add_argument ("-R", "--reduce", type=int, default=3, help="Number of Reduce jobs, default 3")
