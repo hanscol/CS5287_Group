@@ -1,0 +1,16 @@
+* core-site.xml
+hadoop.tmp.dir: file:///drive2/hadoop/tmp_dir
+fs.defaultFS: hdfs://10.20.201.49:9000
+
+* hdfs-site.xml
+dfs.namenode.name.dir: file:///drive2/hadoop/tmp/dfs/name
+dfs.datanode.data.dir: file:///drive2/hadoop/tmp/dfs/data
+dfs.namenode.secondary.http-address: masi-10:50090
+dfs.replication: 3
+
+* mapred-site.xml
+mapreduce.framework.name: yarn
+mapreduce.map.memory.mb: 2048
+mapreduce.map.java.opts: -XmX1024m
+mapreduce.task.timeout: 1200000
+mapreduce.jobhistory.address: masi-10:10020

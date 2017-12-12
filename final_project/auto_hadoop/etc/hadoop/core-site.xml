@@ -1,0 +1,11 @@
+<configuration>
+    <property>
+        <name>hadoop.tmp.dir</name>
+        <value>file:///drive2/hadoop/tmp_dir</value>
+        <description>Abase for other temporary directories.</description>
+    </property>
+    <property>
+        <name>fs.defaultFS</name>
+        <value>hdfs://10.20.201.49:9000</value>
+    </property>
+</configuration>

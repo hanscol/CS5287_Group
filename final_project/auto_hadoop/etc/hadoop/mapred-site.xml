@@ -1,0 +1,24 @@
+<configuration>
+    <property>   
+	 <name>mapreduce.framework.name</name>
+   	 <value>yarn</value>
+    </property>
+
+    <property>
+         <name>mapreduce.map.memory.mb</name>
+	 <value>2048</value>
+    </property>    
+    <property>
+         <name>mapreduce.map.java.opts</name>
+	 <value>-XmX1024m</value>
+    </property>  
+    <property>
+         <name>mapreduce.task.timeout</name>
+	 <value>1200000</value>
+    </property> 
+    <property>
+         <name>mapreduce.jobhistory.address</name>
+         <value>masi-10:10020</value>
+    </property>
+
+</configuration>

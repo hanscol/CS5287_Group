@@ -1,0 +1,22 @@
+<configuration>
+    <property>
+	<name>dfs.namenode.secondary.http-address</name>
+	<value>masi-10:50090</value> 
+    </property>
+    <property>
+	<name>dfs.replication</name>
+        <value>3</value>
+    </property>
+    <property>
+        <name>dfs.namenode.name.dir</name>
+        <value>file:///drive2/hadoop/tmp/dfs/name</value>
+    </property>
+    <property>
+        <name>dfs.datanode.data.dir</name>
+        <value>file:///drive2/hadoop/tmp/dfs/data</value>
+    </property>
+<property>
+<name>dfs.hosts.exclude</name>
+<value>/usr/local/hadoop/etc/hadoop/excludes</value>
+</property>
+</configuration>
