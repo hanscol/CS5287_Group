@@ -1,0 +1,7 @@
+# Local machines
+[localVMs]
+127.0.0.1  ansible_connection=local
+
+[hadoop_nodes]
+129.59.107.162 ansible_connection=ssh
+129.59.107.85 ansible_connection=ssh
