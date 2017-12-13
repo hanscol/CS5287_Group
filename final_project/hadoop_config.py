@@ -16,8 +16,8 @@ def set_params(path, options):
                 property[1].text = value
     param_tree.write(path)
 
-def main(user_param_file):
-    user_param_file = open(user_param_file, 'r')
+def main(user_param_file_path):
+    user_param_file = open(user_param_file_path, 'r')
     user_param_file = user_param_file.readlines()
     options = {}
     for line in user_param_file:
