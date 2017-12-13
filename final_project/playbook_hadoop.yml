@@ -1,0 +1,19 @@
+# Master Ansible playbook
+
+  - name: "Hadoop Configuration"
+    hosts: hadoop_nodes
+    remote_user: ubuntu
+    gather_facts: no
+    tasks:
+    - name: "copy files"  
+      copy:
+        src: "{{ item }}"
+        dest: /home/ubuntu
+        owner: ubuntu
+        group: ubuntu
+        mode: u+rw,u-x,g-rwx,o-rwx
+      with_items:
+        - config.txt
+        - hadoop_config.py
+    - name: "Configure hadoop/hbase/yarn"
+      command: python hadoop_config.py config.txt

@@ -1,0 +1,37 @@
+* core-site.xml
+hadoop.tmp.dir: file:///drive2/hadoop/tmp_dir
+fs.defaultFS: hdfs://10.20.201.49:9000
+
+* hdfs-site.xml
+dfs.namenode.name.dir: file:///drive2/hadoop/tmp/dfs/name
+dfs.datanode.data.dir: file:///drive2/hadoop/tmp/dfs/data
+dfs.namenode.secondary.http-address: masi-10:50090
+dfs.replication: 3
+
+* mapred-site.xml
+mapreduce.framework.name: yarn
+mapreduce.map.memory.mb: 2048
+mapreduce.map.java.opts: -XmX1024m
+mapreduce.task.timeout: 1200000
+mapreduce.jobhistory.address: masi-10:10020
+
+* hbase-site.xml
+hbase.rootdir: hdfs://10.20.201.46:9000/hbase
+hbase.master: masi-10:16000
+hbase.cluster.distributed: true
+hbase.zookeeper.quorum: masi-10,goat,zeppelin,felakuti,masi-1,qotsa,atdi,slayer,swift,mogwai,isis,godspeed,pelican
+hbase.zookeeper.property.dataDir: file:///usr/local/zookeeper/data
+zookeeper.session.timeout: 400000
+hbase.master.maxclockskew: 180000
+hbase.hregion.max.filesize: 5368709120
+hbase.master.loadbalance.bytable: true
+
+* yarn-site.xml
+yarn.nodemanager.aux-services: mapreduce_shuffle
+yarn.nodemanager.aux-services.mapreduce_shuffle: org.apache.hadoop.mapred.ShuffleHandler
+yarn.resourcemanager.resource-tracker.address: master-10:8025
+yarn.resourcemanager.scheduler.address: master-10:8039
+yarn.resourcemanager.address: masi-10:8040
+yarn.scheduler.capacity.node-locality-delay: 10
+yarn.nodemanager.vmem-check-enabled: true
+yarn.nodemanager.vmem-pmem-ratio: 1
